@@ -1,0 +1,1 @@
+web: gunicorn LSO.wsgi

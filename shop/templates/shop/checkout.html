@@ -1,0 +1,194 @@
+{% extends 'shop/basic.html' %}
+
+{% block title%} Checkout - Let Serve Other's{% endblock %}
+{% block css %}
+#container1 {
+width:50%;
+float:left;
+}
+#container2 {
+width:50%;
+float:right;
+}
+#cont2 {
+min-height : 626px;
+}
+{% endblock %}
+{% block body %}
+
+{% if user.is_authenticated %}
+<div>
+    <div class="container wow fadeIn" id=" container1">
+        <h2 class="my-3 h2 text-left">Checkout form</h2>
+        <div class="row">
+            <div class="col-md-6 mb-3">
+                <div class="card">
+                    <form method="post" action="/shop/checkout/">{% csrf_token %}
+                        <input type="hidden" name="itemsJson" id="itemsJson">
+                        <input type="hidden" name="amount" id="amount">
+                        <input type="hidden" name="user_id" id="user_id" value="{{ request.user.id }}">
+
+                        <h3>User Details</h3>
+
+                        <div class='hideable_shipping_form'>
+
+                            <div class="row">
+                                <div class="col-lg-4 col-md-6 mb-4">
+                                    <label for="name">Name</label>
+                                    <input type="text" class="form-control" id="name" name="name" placeholder="Name"
+                                        required>
+                                </div>
+                                <div class="col-lg-4 col-md-6 mb-4">
+                                    <label for="Email">Email</label>
+                                    <input type="email" class="form-control" id="email" name="email"
+                                        placeholder="abc@gmail.com" required>
+                                </div>
+                            </div>
+
+                            <div class="md-form mb-5">
+                                <div class="form-group">
+                                    <label for="Address1">Address</label>
+                                    <input type="text" class="form-control" id="address1" name="address1"
+                                        placeholder="1234 near Shivajinagar" required>
+                                </div>
+                                <div class="form-group">
+                                    <label for="Address2">Appartment</label>
+                                    <input type="text" class="form-control" id="address2" name="address2"
+                                        placeholder="Apartment, studio, or floor">
+                                </div>
+
+                            </div>
+
+                            <div class="row">
+                                    <div class="col-lg-4 col-md-6 mb-4">
+
+                                        <label for="City">Choose City:</label>
+
+                                        <select name="city" id="city">
+                                            <option value="default">Default</option>
+                                            <option value="pune">Pune</option>
+                                        </select>
+                                    </div>
+                                    <div class="col-lg-4 col-md-6 mb-4">
+                                        <label for="State">Choose State:</label>
+
+                                        <select name="state" id="state">
+                                            <option value="default">Default</option>
+                                            <option value="maharashtra">Maharashtra</option>
+                                        </select>
+                                    </div>
+                                <div class="col-lg-4 col-md-6 mb-4">
+                                    <label for="zip_code">Zip</label>
+                                    <input type="text" class="form-control" id="zip_code" name="zip_code"
+                                        placeholder="zip_code" required pattern="[0-9]{6}">
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label for="phone">Phone Number</label>
+                                <input type="tel" class="form-control" id="phone" name="phone" placeholder="phone" required
+                                    pattern="[0-9]{10}">
+                            </div>
+                        </div>
+
+                        <hr>
+
+                        <button type="submit" class="btn btn-primary" name="onlinePay">Online Pay</button>
+                        <button type="submit" class="btn btn-primary" name="cashOnDelivery">Cash On Delivery</button>
+
+                    </form>
+                </div>
+            </div>
+            <div class="col mr-60 mb-5">
+                <span id="title">
+                    <h2> Review Your Cart items </h2>
+                </span>
+                <div class="my-0">
+                    <ul class="list-group" id='items' style="padding-right: 3px;">
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+{% else %}
+<div id="cont2">
+    <div class="alert alert-info">
+        <font style="font-size:22px">
+            <center>Before checkout you need to <strong><a class="alert-link" data-toggle="modal"
+                        data-target="#loginModal">Login</a></strong></center>
+        </font>
+    </div>
+</div>
+{% endif %}
+
+{% endblock %}
+
+{% block js %}
+<script src="//ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
+<script src="//geodata.solutions/includes/countrystatecity.js"></script>
+<script>
+    if (localStorage.getItem('cart') == null) {
+        var cart = {};
+    } else {
+        cart = JSON.parse(localStorage.getItem('cart'));
+    }
+    var sum = 0;
+    var sumPrice = 0;
+    var totalPrice = 0;
+    var finalamt = 0;
+    deliverycharges = 25;
+    if ($.isEmptyObject(cart)) {
+        // If object is empty
+        mystr = "<div class='alert alert-info'><font style='font-size:22px'>"
+        mystr = mystr + "<center>Your cart is <strong>Empty</strong>, please <strong>Add</strong> some items before checking out ! </center>"
+        mystr = mystr + "<center>Click <a href='/shop/' class='alert-link'>Here</a> to Add items.</center></font></div>";
+        $('#items').append(mystr);
+        document.getElementById('info').innerHTML = "";
+        document.getElementById('title').innerHTML = "";
+    } else {
+        var i = 0;
+        for (item in cart) {
+            let name = cart[item][1];
+            let qty = cart[item][0];
+            let itemPrice = cart[item][2];
+            sum = sum + qty;
+            sumPrice = qty * itemPrice;
+            gst = ((sumPrice * 5) / 100);
+            totalPrice = totalPrice + sumPrice + gst;
+            finalamt = totalPrice + deliverycharges;
+            finalamt = Math.round(finalamt);
+
+            mystr = `<div class="col-md-12 mb-4"><li class="list-group-item d-flex justify-content-between mr-0">${++i} : ${name}<span class="badge badge-primary badge-pill">${qty} x Rs. ${itemPrice} = Rs. ${sumPrice}</span></li>`;
+            $('#items').append(mystr);
+        }
+        mystr = `<li class="list-group-item d-flex justify-content-between mr-0" style="background: #b3dbff;">Total Price(Inc. GST):</span>
+    <span class="badge badge-primary badge-pill" >Rs.<span class="badge badge-primary badge-pill" id="totalPrice"> ${totalPrice} /-</span></li>`;
+        $('#items').append(mystr);
+        mystr1 = `<li class="list-group-item d-flex justify-content-between mr-0" style="background: #b3dbff;">Delivery Charges:</span>
+    <span class="badge badge-primary badge-pill">Rs.<span class="badge badge-primary badge-pill" id="deliverycharges"> ${deliverycharges}.00 /-</span></li>`;
+        $('#items').append(mystr1);
+        mystr2 = `<li class="list-group-item d-flex justify-content-between mr-0" style="background: bisque;">Final Amount(Inc. Delivery Charges):</span>
+    <span class="badge badge-danger badge-pill">Rs.<span class="badge badge-danger badge-pill" id="finalamt"> ${finalamt} /-</span></li></div>`;
+        $('#items').append(mystr2);
+    }
+    document.getElementById('cart').innerHTML = sum;
+    document.getElementById('finalamt').innerHTML = finalamt;
+
+
+    $('#itemsJson').val(JSON.stringify(cart));
+    $('#amount').val($('#finalamt').html());
+
+    {% if thank %}
+    alert('Thanks for ordering with us. Your order id is {{id}}. Use it to track your order using our order tracker');
+    localStorage.clear();
+    document.location = "/shop";
+    {% endif %}
+
+//    /* restrict user browser click go back button */
+//    function preback() { window.history.forward(); }
+//    setTimeout("preback()", 0);
+//    window.onunload = function() { null };
+</script>
+{% endblock %}

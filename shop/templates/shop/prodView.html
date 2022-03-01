@@ -1,0 +1,141 @@
+{% extends 'shop/basic.html' %}
+
+{% block title%} {{product.product_name}} - Let's Serve Other's {% endblock %}
+{% block css %}
+#cont {
+min-height : 553px;
+}
+.rating {
+    unicode-bidi: bidi-override;
+    direction: rtl;
+  }
+  .rating > input {
+    display: inline-block;
+    position: relative;
+    width: 1.1em;
+  }
+  .rating > input:hover:before,
+  .rating > input:hover ~ input:before {
+     content: "\2605";
+     position: absolute;
+  }
+.rating input:checked ~ label {
+    color: #ffc107
+}
+{% endblock %}
+{% block body %}
+<div>&nbsp;
+    <a href="/shop" class="active text-dark">
+        <i class="fas fa-qrcode"></i>
+        <span>All Food</span>
+    </a>
+</div>
+
+<div class="container my-4" id="cont">
+    <div class="row">
+        <div class="col-md-4">
+            <img src="/media/{{product.image}}" width="233px" height="300px">
+
+        </div>
+
+        <div class="col-md-8">
+            <h5>{{product.product_name}}</h5>
+            <p><b>Rs. {{product.price}} </b></p>
+            <p>{{product.desc}}</p>
+            <!--        <button class="btn btn-primary mx-2">Add to Cart</button>-->
+            <div class='alert alert-info col-md-4 col-md-offset-4'>
+                <center>Click <a href='/shop/search/?search={{product.product_name}}' class='alert-link'>Here</a> to
+                    Order.</center>
+            </div>
+        </div>
+    </div>
+    <div class="container mt-5">
+        <h5 class="text-uppercase font-weight-bold">Reviews</h5>
+        <hr class="mt-0 pt-0">
+        <div class="row">
+            <div class="col-sm-7 mt-2">
+                {% for review in reviews %}
+                <div class="review-heading">
+                    <a class="text-capitalize"><i class="far fa-user mr-1"></i>{{review.user}}</a>
+                    <a class="ml-2"><i class="far fa-clock mr-1"></i>{{review.created_at}}</a>
+                    <a style="float: right;">The rating given is <b>{{review.rate}}</b> star</a>
+                </div>
+                <div class="review-body mt-2">
+                    <p>{{review.comment}}</p>
+                </div>
+                {% endfor %}
+            </div>
+            <div class="col-sm-5 mt-2">
+                <div class="text-uppercase font-weight-bold">Write your reviews</div>
+                <form class="review-group" method="get" action="/shop/review">
+                    <input type="hidden" name="product_id" id="product_id" value="{{product.id}}" />
+                    <div class="form-group">
+                        <textarea class="input" type="text" name="comment" placeholder="Your Review"></textarea>
+                    </div>
+                    <div class="form-group">
+                        <div class="input rating">
+                            <p class="text-uppercase font-weight-bold">Your Rating :</p>
+                            <div class="rating-wrapper">
+                                <input class="d-none" id="star-1" type="radio" name="rate" value="1" /><label for="star-1"
+                                    class="fas fa-star"></label>
+                                    <input class="d-none" id="star-2" type="radio" name="rate" value="2" /><label for="star-2"
+                                    class="fas fa-star"></label>
+                                    <input class="d-none" id="star-3" type="radio" name="rate" value="3" /><label for="star-3"
+                                    class="fas fa-star"></label>
+                                    <input class="d-none" id="star-4" type="radio" name="rate" value="4" /><label for="star-4"
+                                    class="fas fa-star"></label>
+                                <input class="d-none" id="star-5" type="radio" name="rate" value="5" /><label for="star-5"
+                                    class="fas fa-star"></label>
+                                
+                                
+                                
+                                
+                            </div>
+                        </div>
+                    </div>
+                    {% if user.is_authenticated %}
+                    <button class="btn btn-danger btn-md m-0" type="submit">Post</button>
+                    {% else %}
+                    <font style="font-size:22px">You need to <strong><a class="alert-link" data-toggle="modal" data-target="#loginModal">Login</a></strong></font><font style="font-size:20px"> Before Writing Review</font>
+                    {% endif %}
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+
+{% block js %}
+<script>
+    console.log('working');
+    if (localStorage.getItem('cart') == null) {
+        var cart = {};
+    }
+
+    else {
+        cart = JSON.parse(localStorage.getItem('cart'));
+        document.getElementById('cart').innerHTML = Object.keys(cart).length;
+    }
+
+    $('.cart').click(function () {
+
+        console.log('clicked');
+        var idstr = this.id.toString();
+        console.log(idstr);
+        if (cart[idstr] != undefined) {
+            cart[idstr] = cart[idstr] + 1;
+        }
+        else {
+            cart[idstr] = 1;
+        }
+        console.log(cart);
+        localStorage.setItem('cart', JSON.stringify(cart));
+        document.getElementById('cart').innerHTML = Object.keys(cart).length;
+    });
+    $('#popcart').popover()
+
+    document.getElementById("popcart").setAttribute('data-content', '<h5>Cart</h5>');
+</script>
+{% endblock %}
