@@ -6,11 +6,9 @@ from django.views import View
 from shop.models import Profile
 from django.shortcuts import render, HttpResponse, redirect
 from django.http import HttpResponseRedirect
-from django_simple_coupons.validations import validate_coupon
-from django_simple_coupons.models import Coupon as libraryCoupon
 import uuid
 # from django.http import HttpResponse
-from .models import Product, Contact, Orders, OrderUpdate, Review, Coupon
+from .models import Product, Contact, Orders, OrderUpdate, Review
 from django.contrib.auth.models import User
 from django.contrib import messages
 from math import ceil
@@ -155,34 +153,10 @@ def checkout(request):
             return render(request, 'shop/paytm.html', {'lso_dict': lso_dict})
         elif 'cashOnDelivery' in request.POST:
             return render(request, 'shop/checkout.html', {'thank': thank, 'id': id})
-    if request.method == "GET":
-        try:
-            order =  Orders.objects.get(userId = request.user.id, status= False)
-            print(order)
-        except Orders.DoesNotExist:
-            order =  Orders.objects.create(userId = request.user.id, status= False,name=User.objects.get(id= request.user.id).username)
-
-        couponamt = 0
-        coupon_code = ''
-        try:
-            coupon =  Coupon.objects.get(order_id = order.order_id)
-            coupon_code = coupon.code
-            couponamt = coupon.amount
-        except Coupon.DoesNotExist:
-            coupon =  " "
-
-        context = {
-            'items_json ': order.items_json ,
-            'status': order.status,
-            'coupon_code': coupon_code,
-            'couponamt' : couponamt
-        }
-        print("context in views.py",context)
-        return render(request, 'shop/checkout.html', context)        
+        
 
 
     return render(request, 'shop/checkout.html')
-    #return render(request, 'shop/checkout.html', {'itemPrice':itemPrice,'coupon':coupon,'totalPrice':totalPrice,'sumPrice':sumPrice,'final_amt':final_amt,'coupon_amt':coupon_amt})
 
 def productView(request, myid):
     product = Product.objects.get(id=myid)
@@ -199,35 +173,7 @@ def productView(request, myid):
     #print(context)
     return render(request, 'shop/prodView.html', context)
 
-class UseCouponView(View):
-    def get(self, request, *args, **kwargs):
-        coupon_code = request.GET.get("coupon_code")
-        user = User.objects.get(username=request.user.username)
-        
-        status = validate_coupon(coupon_code=coupon_code, user=user)
-        if status['valid']:
-            coupon = Coupon.objects.get(code=coupon_code)
-            coupon.use_coupon(user=user)
-        
-            return HttpResponse("OK")
-        
-        return HttpResponse(status['message'])
-VALID = {
-    "valid": True
-}
 
-INVALID = {
-    "valid": False,
-    "message": "Sorry, this coupon is not valid for this user account."
-}
-
-# def use_coupon(self, user):
-#         coupon_user, created = CouponUser.objects.get_or_create(user=user, coupon=self)
-#         coupon_user.times_used += 1
-#         coupon_user.save()
-
-#         self.times_used += 1
-#         self.save()
 
 def handeLogin(request):
     if request.method == "POST":

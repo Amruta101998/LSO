@@ -4,7 +4,7 @@ from django.contrib import admin
 from .models import *
 # from django.contrib.auth.models import
 from django.contrib.auth.admin import UserAdmin
-from .models import Review , Payment
+from .models import Review
 
 
 class OrderUpdateAdmin(admin.ModelAdmin):
@@ -48,17 +48,7 @@ class ContactAdmin(admin.ModelAdmin):
     def has_change_permission(self, request, obj=None):
         return False
 
-class AddressAdmin(admin.ModelAdmin):
-    list_display = [
-        'user',
-        'street_address',
-        'apartment_address',
-        'country',
-        'zip',
-        'default'
-    ]
-    list_filter = ['default', 'country']
-    search_fields = ['user', 'street_address', 'apartment_address', 'zip']
+
 
 admin.site.register(Product, ProductAdmin)
 admin.site.register(Contact, ContactAdmin)
@@ -71,8 +61,3 @@ admin.site.site_header = "Let Serve Others"
 admin.site.index_title = "Let Serve Others Administration"
 admin.site.site_title = "Let Serve Others Admin"
 
-
-admin.site.register(OrderItem)
-admin.site.register(Payment)
-admin.site.register(Coupon)
-admin.site.register(Address, AddressAdmin)
